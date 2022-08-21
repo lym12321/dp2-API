@@ -6,7 +6,7 @@ import json
 
 requests = session() # 这样可以存 cookie，用法与 requests 相同
 
-baseUrl = '' # 服务器 api 地址
+baseUrl = 'Your API' # 服务器 api 地址
 
 headers = {'Content-Type' : 'application/json'}
 
@@ -25,7 +25,10 @@ def login(username, password):
     }
     try:
         r = requests.post(f'{baseUrl}/login', data=json.dumps(data), headers=headers)
-        return ret(0, json.loads(r.text))
+        j = json.loads(r.text)
+        if j['LoginResult']['ErrorCode'] != 0:
+            return ret(j['LoginResult']['ErrorCode'], j['LoginResult']['ErrorInfo'])
+        return ret(0, j)
     except Exception as e:
         return ret(-1, e)
 
