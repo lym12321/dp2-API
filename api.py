@@ -1,12 +1,12 @@
 # @Author: lym12321
-# @Date: 2022-08-21
+# @Date: 2022-08-29
 
 from requests import session
 import json
 
 requests = session() # 这样可以存 cookie，用法与 requests 相同
 
-baseUrl = 'Your API' # 服务器 api 地址
+baseUrl = '' # 服务器 api 地址
 
 headers = {'Content-Type' : 'application/json'}
 
@@ -89,7 +89,7 @@ def getBiblioInfo(recPath, retType):
 
 # 借书或续借
 # reader: 读者证条码号
-# barcode: 书籍条码号
+# barcode: 书籍册条码号
 # 若 cont = True，则为续借操作
 def Borrow(reader, barcode, cont = False):
     data = {
@@ -187,5 +187,43 @@ def getSearchResult(start, count, resultSetName = 'default'):
         if j['GetSearchResultResult']['ErrorCode'] != 0:
             return ret(j['GetSearchResultResult']['ErrorCode'], j['GetSearchResultResult']['ErrorInfo'])
         return ret(0, {'count': j['GetSearchResultResult']['Value'], 'results': j['searchresults']})
+    except Exception as e:
+        return ret(-1, e)
+
+# 获得同一书目记录下的若干册记录信息
+# recPath: 书目路径
+# start: 查询起点，从 0 开始
+# count: 查询数量，当 count = -1 时，获取尽可能多的结果
+def getEntities(recPath, start, count):
+    data = {
+        'strBiblioRecPath': recPath,
+        'lStart': start,
+        'lCount': count,
+        'strStyle': 'onlygetpath'
+    }
+    try:
+        r = requests.post(f'{baseUrl}/getEntities', data=json.dumps(data), headers=headers)
+        j = json.loads(r.text)
+        if j['GetEntitiesResult']['ErrorCode'] != 0:
+            return ret(j['GetEntitiesResult']['ErrorCode'], j['GetEntitiesResult']['ErrorInfo'])
+        return ret(0, {'count': j['GetEntitiesResult']['Value'], 'results': j['entityinfos']})
+    except Exception as e:
+        return ret(-1, e)
+
+# 获得实体记录信息
+# barcode: 实体条码
+# retType: 返回类型
+def getItemInfo(barcode, retType):
+    data = {
+        'strBarcode': barcode,
+        'strResultType': retType
+    }
+    try:
+        r = requests.post(f'{baseUrl}/getItemInfo', data=json.dumps(data), headers=headers)
+        j = json.loads(r.text)
+        if j['GetItemInfoResult']['ErrorCode'] != 0:
+            return ret(j['GetItemInfoResult']['ErrorCode'], j['GetItemInfoResult']['ErrorInfo'])
+        # return ret(0, {'count': j['GetItemInfoResult']['Value'], 'results': j['entityinfos']})
+        return ret(0, j['strResult'])
     except Exception as e:
         return ret(-1, e)
