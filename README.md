@@ -1,9 +1,9 @@
-# dp2-Python
+# dp2-API
 
 Encapsulated API for [dp2-Library](http://dp2003.cn/dp2portal/view.aspx)
 
 
-### API
+### 函数定义
 
 - `login(username, password)` 登入系统
 
